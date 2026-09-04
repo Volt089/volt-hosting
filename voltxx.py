@@ -86,7 +86,7 @@ class DB:
 
     async def connect(self):
         self.pool = await aiomysql.create_pool(
-            host=os.getenv("TIDB_HOST", "gateway01.us-west-1.prod.aws.tidbcloud.com"),
+            host=os.getenv("TIDB_HOST", "6dc98ec1-997e-432d-bc2a-610fefb2d3fb"),
             port=int(os.getenv("TIDB_PORT", "4000")),
             user=os.getenv("TIDB_USER", "83EHILJ0"),
             password=os.getenv("TIDB_PASSWORD", "13372192-371c-4d86-8378-89ad42f3b104"),
