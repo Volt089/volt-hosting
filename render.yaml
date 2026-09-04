@@ -1,0 +1,23 @@
+services:
+  - type: worker
+    name: volt-hosting
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python voltxx.py
+    envVars:
+      - key: BOT_TOKEN
+        value: "8992507650:AAESaPijyyAJxEgqX4_hcDRzQGkxp1lhStE"
+      - key: OWNER_IDS
+        value: "8747221712"
+      - key: CO_OWNER_IDS
+        value: "5769074791"
+      - key: TIDB_HOST
+        value: "gateway01.ap-south-1.prod.aws.tidbcloud.com"
+      - key: TIDB_PORT
+        value: "4000"
+      - key: TIDB_USER
+        value: "83EHILJ0"
+      - key: TIDB_PASSWORD
+        value: "13372192-371c-4d86-8378-89ad42f3b104"
+      - key: TIDB_DATABASE
+        value: "volt_hosting"
