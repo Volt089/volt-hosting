@@ -16,12 +16,14 @@ services:
       - key: CO_OWNER_IDS
         value: "5769074791"
       - key: TIDB_HOST
-        value: "gateway01.ap-south-1.prod.aws.tidbcloud.com"
+        value: "gateway01.ap-southeast-1.prod.aws.tidbcloud.com"
       - key: TIDB_PORT
         value: "4000"
       - key: TIDB_USER
-        value: "83EHILJ0"
+        value: "4VMCiZGCddWQNae.root"
       - key: TIDB_PASSWORD
-        value: "13372192-371c-4d86-8378-89ad42f3b104"
+        value: "we07UuqhfChTVUqt"
       - key: TIDB_DATABASE
         value: "volt_hosting"
+      - key: DB_SSL
+        value: "1"

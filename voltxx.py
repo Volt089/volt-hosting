@@ -8,7 +8,7 @@ Secrets are environment variables. No public shell/exec interface is exposed.
 Uploaded projects are never executed during upload; deployment requires approval
 for public users and runs as a separate child process with conservative limits.
 """
-import asyncio, hashlib, json, logging, os, re, shutil, signal, socket, threading, time, uuid, zipfile
+import asyncio, hashlib, json, logging, os, re, shutil, signal, socket, ssl, threading, time, uuid, zipfile
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -86,16 +86,22 @@ class DB:
         self.pool = pool; self.lock = asyncio.Lock()
 
     async def connect(self):
+        ssl_ctx = None
+        if os.getenv("DB_SSL", "1") == "1":
+            ssl_ctx = ssl.create_default_context()
+            ssl_ctx.check_hostname = False
+            ssl_ctx.verify_mode = ssl.CERT_NONE
         self.pool = await aiomysql.create_pool(
-            host=os.getenv("TIDB_HOST", "gateway01.ap-south-1.prod.aws.tidbcloud.com"),
+            host=os.getenv("TIDB_HOST", "gateway01.ap-southeast-1.prod.aws.tidbcloud.com"),
             port=int(os.getenv("TIDB_PORT", "4000")),
-            user=os.getenv("TIDB_USER", "83EHILJ0"),
-            password=os.getenv("TIDB_PASSWORD", "13372192-371c-4d86-8378-89ad42f3b104"),
+            user=os.getenv("TIDB_USER", "4VMCiZGCddWQNae.root"),
+            password=os.getenv("TIDB_PASSWORD", "we07UuqhfChTVUqt"),
             db=os.getenv("TIDB_DATABASE", "volt_hosting"),
             autocommit=False,
             minsize=1,
             maxsize=10,
-            charset='utf8mb4'
+            charset='utf8mb4',
+            ssl=ssl_ctx
         )
         await self._init_tables()
         await self.seed_settings()
