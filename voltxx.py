@@ -8,9 +8,10 @@ Secrets are environment variables. No public shell/exec interface is exposed.
 Uploaded projects are never executed during upload; deployment requires approval
 for public users and runs as a separate child process with conservative limits.
 """
-import asyncio, hashlib, json, logging, os, re, shutil, signal, socket, time, uuid, zipfile
+import asyncio, hashlib, json, logging, os, re, shutil, signal, socket, threading, time, uuid, zipfile
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from io import BytesIO
 from pathlib import Path
 from typing import Optional, Dict, Any
@@ -86,7 +87,7 @@ class DB:
 
     async def connect(self):
         self.pool = await aiomysql.create_pool(
-            host=os.getenv("TIDB_HOST", "6dc98ec1-997e-432d-bc2a-610fefb2d3fb"),
+            host=os.getenv("TIDB_HOST", "gateway01.ap-south-1.prod.aws.tidbcloud.com"),
             port=int(os.getenv("TIDB_PORT", "4000")),
             user=os.getenv("TIDB_USER", "83EHILJ0"),
             password=os.getenv("TIDB_PASSWORD", "13372192-371c-4d86-8378-89ad42f3b104"),
@@ -972,7 +973,27 @@ async def shutdown(app):
         with suppress(Exception): await pm.stop(did)
     await db.close()
 
+# -------------------- UPTIME / KEEP-ALIVE --------------------
+class KeepAliveHandler(BaseHTTPRequestHandler):
+    def _reply(self):
+        self.send_response(200); self.send_header("Content-Type","text/plain"); self.end_headers(); self.wfile.write(b"OK")
+    def do_GET(self): self._reply()
+    def do_HEAD(self): self._reply()
+    def do_POST(self): self._reply()
+    def log_message(self,*a): pass
+
+def start_uptime_server():
+    """Bind PORT (Render injects it) so UptimeRobot / Render health checks keep the bot awake."""
+    port=int(os.getenv("PORT","8080"))
+    try:
+        srv=ThreadingHTTPServer(("0.0.0.0",port),KeepAliveHandler)
+    except Exception as e:
+        log.error("⚡ Uptime server could not bind port %s: %s",port,e); return
+    threading.Thread(target=srv.serve_forever,daemon=True,name="uptime-http").start()
+    log.info("⚡ Uptime server listening on http://0.0.0.0:%s (UptimeRobot / healthcheck)",port)
+
 async def main():
+    start_uptime_server()
     BASE_USER_DIR.mkdir(parents=True,exist_ok=True); BACKUP_DIR.mkdir(parents=True,exist_ok=True); await db.connect()
     app=Application.builder().token(BOT_TOKEN).build()
     APP_STATE.bot=app.bot

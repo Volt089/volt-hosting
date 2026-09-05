@@ -1,9 +1,13 @@
 services:
-  - type: worker
+  - type: web_service
     name: volt-hosting
     runtime: python
+    plan: free
+    repo: https://github.com/Volt089/volt-hosting
+    branch: main
     buildCommand: pip install -r requirements.txt
     startCommand: python voltxx.py
+    healthCheckPath: /
     envVars:
       - key: BOT_TOKEN
         value: "8992507650:AAESaPijyyAJxEgqX4_hcDRzQGkxp1lhStE"
